@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мини-склад</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-icon">▦</span><span>Мини-склад</span></div>
+      <nav class="navigation" aria-label="Основная навигация">
+        <button class="nav-item active" data-page="stock"><span>⌂</span>Остатки</button>
+        <button class="nav-item" data-page="products"><span>▣</span>Товары</button>
+        <button class="nav-item" data-page="incoming"><span>＋</span>Приход</button>
+        <button class="nav-item" data-page="outgoing"><span>↗</span>Выдача</button>
+        <button class="nav-item" data-page="history"><span>▤</span>История</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="status-dot"></span> Демоверсия · данные примера</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Открыть меню">☰</button>
+        <div class="page-heading"><h1 id="pageTitle">Остатки</h1><p id="pageSubtitle">Обзор товаров на складе</p></div>
+        
+      <div class="user-area">
+        <div class="avatar" id="userAvatar">?</div>
+
+        <div class="user-info">
+          <strong id="currentUserName">Загрузка...</strong>
+          <span id="currentUserRole">Проверяем аккаунт</span>
+        </div>
+
+        <form action="{{ url_for('logout') }}" method="POST">
+          <button class="user-menu" type="submit" title="Выйти из аккаунта">
+            ↪
+          </button>
+        </form>
+      </div>
+
+      </header>
+
+      <section class="content">
+        <div class="notice">
+        <span class="notice-icon">i</span>
+        <span>Складской учёт ведётся в базе данных. Доступные действия зависят от вашей роли.</span>
+      </div>
+
+        <section class="stats-grid" id="statsGrid">
+          <article class="stat-card"><div class="stat-icon blue">▣</div><div><p>Виды товаров</p><strong id="statProducts">5</strong><small>наименований</small></div></article>
+          <article class="stat-card"><div class="stat-icon green">▤</div><div><p>Единиц на складе</p><strong id="statUnits">259.5</strong><small>шт. и м</small></div></article>
+          <article class="stat-card"><div class="stat-icon amber">↗</div><div><p>Активные позиции</p><strong id="statActive">5</strong><small>не в архиве</small></div></article>
+        </section>
+
+        <section class="panel" id="stockPage">
+          <div class="panel-heading"><div><h2>Остатки товаров</h2><p>Текущие позиции и доступное количество</p></div><button class="primary-button" id="addProductButton">＋ Добавить товар</button></div>
+          <div class="toolbar"><label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="Поиск по названию..."></label><select id="currencyFilter" aria-label="Фильтр по валюте"><option value="all">Все валюты</option><option value="UZS">UZS — сум</option><option value="USD">USD — доллар</option><option value="CNY">CNY — юань</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>№</th><th>Товар</th><th>Единица</th><th>Остаток</th><th>Цена</th><th>Валюта</th><th>Сумма</th></tr></thead><tbody id="productsTable"></tbody></table></div>
+          <div class="empty-state hidden" id="emptyState">Ничего не найдено. Попробуйте изменить поисковый запрос.</div>
+          <div class="currency-totals"><span>Итого по валютам</span><div><small>UZS</small><strong id="totalUZS">—</strong></div><div><small>USD</small><strong id="totalUSD">—</strong></div><div><small>CNY</small><strong id="totalCNY">—</strong></div></div>
+        </section>
+
+        <section class="panel hidden" id="productsPage">
+          <div class="panel-heading"><div><h2>Товары</h2><p>Список товаров, доступных для складского учёта</p></div><button class="primary-button" id="addProductButton2">＋ Добавить товар</button></div>
+          <div class="toolbar"><label class="search-box"><span>⌕</span><input id="productSearchInput" type="search" placeholder="Найти товар..."></label></div>
+          <div class="table-wrap"><table><thead><tr><th>№</th><th>Название</th><th>Единица</th><th>Цена</th><th>Валюта</th><th>Статус</th></tr></thead><tbody id="allProductsTable"></tbody></table></div>
+        </section>
+
+        <section class="panel hidden" id="incomingPage">
+          <div class="panel-heading"><div><h2>Приход товара</h2><p>Демо-форма поступления товара на склад</p></div></div>
+          <form class="form-grid" id="incomingForm">
+            <label>Товар<select id="incomingProduct" required></select></label>
+            <label>Количество<input id="incomingQuantity" type="number" min="0.01" step="0.01" required placeholder="Например, 20"></label>
+            <label class="full-width">Комментарий (необязательно)<input id="incomingComment" type="text" maxlength="200" placeholder="Например, поставка от поставщика"></label>
+            <div class="form-actions full-width"><button class="primary-button" type="submit">Записать приход</button></div>
+          </form>
+        </section>
+
+        <section class="panel hidden" id="outgoingPage">
+          <div class="panel-heading"><div><h2>Выдача товара</h2><p>Демо-форма выдачи на объект</p></div></div>
+          <form class="form-grid" id="outgoingForm">
+            <label>Товар<select id="outgoingProduct" required></select></label>
+            <label>Количество<input id="outgoingQuantity" type="number" min="0.01" step="0.01" required placeholder="Например, 5"></label>
+            <label class="full-width">Объект / адрес клиента<input id="outgoingObject" type="text" required maxlength="200" placeholder="Например, Юнусабад, кв. 12"></label>
+            <label class="full-width">Комментарий (необязательно)<input id="outgoingComment" type="text" maxlength="200" placeholder="Дополнительная информация"></label>
+            <div class="form-actions full-width"><button class="primary-button" type="submit">Записать выдачу</button></div>
+          </form>
+        </section>
+
+        <section class="panel hidden" id="historyPage">
+          <div class="panel-heading"><div><h2>История операций</h2><p>Последние демонстрационные складские движения</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Дата и время</th><th>Операция</th><th>Товар</th><th>Количество</th><th>Объект / комментарий</th></tr></thead><tbody id="historyTable"></tbody></table></div>
+          <div class="empty-state hidden" id="historyEmpty">Операций пока нет.</div>
+        </section>
+
+        <footer>Мини-склад <span>·</span> учебный макет интерфейса</footer>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="productDialog">
+    <form id="productForm" method="dialog">
+      <div class="dialog-heading"><div><h2>Новый товар</h2><p>Пока товар добавляется только в браузере</p></div><button class="icon-button" type="button" id="closeDialog" aria-label="Закрыть">×</button></div>
+      <label>Название товара<input id="newName" type="text" required maxlength="120" placeholder="Например, Датчик движения"></label>
+      <div class="form-grid compact">
+        <label>Единица измерения<select id="newUnit"><option value="шт.">Штуки</option><option value="м">Метры</option></select></label>
+        <label>Цена за единицу<input id="newPrice" type="number" min="0" step="0.01" required placeholder="0.00"></label>
+        <label>Валюта<select id="newCurrency"><option value="UZS">UZS — сум</option><option value="USD">USD — доллар</option><option value="CNY">CNY — юань</option></select></label>
+        <label>Начальный остаток<input id="newStock" type="number" min="0" step="0.01" value="0" required></label>
+      </div>
+      <p class="form-error hidden" id="formError"></p>
+      <div class="dialog-actions"><button class="secondary-button" type="button" id="cancelDialog">Отмена</button><button class="primary-button" type="submit">Добавить товар</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
